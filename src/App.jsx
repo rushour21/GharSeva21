@@ -2,144 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Users, Shield, Clock, CheckCircle, Menu, X, ChevronRight, Phone, Mail, Zap, Home, DollarSign, Briefcase } from 'lucide-react';
 import logo from './assets/logo.png';
+import axios from 'axios';
+import Modal from './components/common/Modal';
+import LoginForm from './components/auth/LoginForm';
+import SignupForm from './components/auth/SignupForm';
 
-// --- Reusable Modal Component ---
-const Modal = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
+// Ensure cookie is sent with requests
+axios.defaults.withCredentials = true;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'; // Fallback for dev
 
-  return (
-    // Added backdrop-blur-sm for the blur effect
-    <div className="fixed inset-0  z-50 flex justify-center items-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-100 opacity-100">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-bold text-teal-700">{title}</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <X size={24} />
-            </button>
-          </div>
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
 
-// --- LoginForm Component (now handles mock login) ---
-const LoginForm = ({ onClose, openSignup, onLoginSuccess }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Replace with real API login
-    const user = { id: 'provider_123', name: 'Mock Provider', email };
-    localStorage.setItem('providerUser', JSON.stringify(user));
-    // if no profile key exists, default to false
-    if (!localStorage.getItem('providerProfileCompleted')) {
-      localStorage.setItem('providerProfileCompleted', 'false');
-    }
-    onClose();
-    onLoginSuccess?.(user);
-  };
-
-  return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <input
-        type="email"
-        placeholder="Email Address"
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button
-        type="submit"
-        className="w-full py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition duration-300 shadow-md hover:shadow-lg"
-      >
-        Log In
-      </button>
-      <p className="text-sm text-center text-gray-600">
-        Don't have an account?{' '}
-        <button type="button" onClick={() => { onClose(); openSignup(); }} className="text-orange-600 hover:underline font-semibold">
-          Sign Up
-        </button>
-      </p>
-    </form>
-  );
-};
-
-// --- SignupForm Component (now handles mock signup) ---
-const SignupForm = ({ onClose, openLogin, onSignupSuccess, presetPlan }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  useEffect(() => {
-    // If presetPlan is provided we can optionally show it
-  }, [presetPlan]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Replace with real API signup
-    const user = { id: 'provider_123', name, email };
-    localStorage.setItem('providerUser', JSON.stringify(user));
-    // On new signup, profile is incomplete by default
-    localStorage.setItem('providerProfileCompleted', 'false');
-
-    onClose();
-    onSignupSuccess?.(user);
-  };
-
-  return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Full Name"
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-        required
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        type="email"
-        placeholder="Email Address"
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Create Password"
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button
-        type="submit"
-        className="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition duration-300 shadow-md hover:shadow-lg"
-      >
-        Sign Up
-      </button>
-      <p className="text-sm text-center text-gray-600">
-        Already have an account?{' '}
-        <button type="button" onClick={() => { onClose(); openLogin(); }} className="text-teal-600 hover:underline font-semibold">
-          Log In
-        </button>
-      </p>
-    </form>
-  );
-};
 
 
 // --- Main Component ---
@@ -147,6 +19,33 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Check persistent auth
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/api/auth/me`);
+        setUser(data.user);
+        setProvider(data.provider);
+        // Also sync to localStorage for legacy parts if needed, but state is better
+        localStorage.setItem('providerUser', JSON.stringify(data.user));
+        if (data.provider?.profileCompleted) {
+          localStorage.setItem('providerProfileCompleted', 'true');
+        } else {
+          localStorage.removeItem('providerProfileCompleted');
+        }
+      } catch (err) {
+        console.log("Not authenticated", err.message);
+        localStorage.removeItem('providerUser');
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
@@ -162,15 +61,15 @@ export default function App() {
   }, [isLoginModalOpen, isSignupModalOpen, mobileMenuOpen]);
 
   // helpers for auth/profile state
-  const getCurrentUser = () => {
-    try {
-      return JSON.parse(localStorage.getItem('providerUser'));
-    } catch {
-      return null;
-    }
-  };
-  const isLoggedIn = () => !!getCurrentUser();
+  // const getCurrentUser = () => user; // Use state 'user'
+  const isLoggedIn = () => !!user;
+  // This check relies on a flag we might not have yet from /me, 
+  // but let's assume if they have a user obj they might be a provider
+  // Ideally /me returns { user, providerProfile } or we fetch profile separate.
+  // For now, we'll keep using localStorage for 'providerProfileCompleted' 
+  // until we fetch the provider profile explicitly.
   const isProfileCompleted = () => localStorage.getItem('providerProfileCompleted') === 'true';
+
   const setSelectedPlan = (plan) => localStorage.setItem('selectedPlan', JSON.stringify(plan));
   const getSelectedPlan = () => {
     try { return JSON.parse(localStorage.getItem('selectedPlan')); } catch { return null; }
@@ -183,13 +82,13 @@ export default function App() {
     { name: 'Electrical', icon: <Zap className="text-orange-600" size={36} />, providers: 189 },
     { name: 'Cleaning', icon: <Home className="text-teal-600" size={36} />, providers: 456 },
     { name: 'Carpentry', icon: <Zap className="text-orange-600" size={36} />, providers: 167 },
-    { name: 'Painting', icon: <img src="https://api.iconify.design/emojione/paintbrush.svg?color=%2314b8a6" alt="Paint" className='w-9 h-9'/>, providers: 203 },
-    { name: 'AC Repair', icon: <img src="https://api.iconify.design/emojione/snowflake.svg?color=%2314b8a6" alt="AC" className='w-9 h-9'/>, providers: 145 },
-    { name: 'Pest Control', icon: <img src="https://api.iconify.design/emojione/bug.svg?color=%23f97316" alt="Pest" className='w-9 h-9'/>, providers: 98 },
-    { name: 'Appliance Repair', icon: <img src="https://api.iconify.design/emojione/electric-plug.svg?color=%2314b8a6" alt="Plug" className='w-9 h-9'/>, providers: 176 }
+    { name: 'Painting', icon: <img src="https://api.iconify.design/emojione/paintbrush.svg?color=%2314b8a6" alt="Paint" className='w-9 h-9' />, providers: 203 },
+    { name: 'AC Repair', icon: <img src="https://api.iconify.design/emojione/snowflake.svg?color=%2314b8a6" alt="AC" className='w-9 h-9' />, providers: 145 },
+    { name: 'Pest Control', icon: <img src="https://api.iconify.design/emojione/bug.svg?color=%23f97316" alt="Pest" className='w-9 h-9' />, providers: 98 },
+    { name: 'Appliance Repair', icon: <img src="https://api.iconify.design/emojione/electric-plug.svg?color=%2314b8a6" alt="Plug" className='w-9 h-9' />, providers: 176 }
   ];
 
-  const locations = [ 'Wakad', 'Hinjewadi', 'Baner / Pashan', 'Bavdhan', 'Hadapsar', 'Kalewadi', 'Pimple Nilakh' ];
+  const locations = ['Wakad', 'Hinjewadi', 'Baner / Pashan', 'Bavdhan', 'Hadapsar', 'Kalewadi', 'Pimple Nilakh'];
 
   const reviews = [
     { name: 'Priya Sharma', location: 'Wakad', rating: 5, service: 'Plumbing', text: 'Found an excellent plumber within minutes. Professional service and reasonable pricing. GharSeva made it so easy!', date: '2 days ago' },
@@ -198,84 +97,17 @@ export default function App() {
   ];
 
   const subscriptionPlans = [
-    { name: 'Basic', price: '₹499', period: 'month', features: ['Profile listing on platform','Up to 20 leads per month','Basic customer support','Mobile app access'], popular: false },
-    { name: 'Professional', price: '₹999', period: 'month', features: ['Featured profile listing','Unlimited leads','Priority customer support','Advanced analytics dashboard','Payment gateway integration','Marketing tools & promotions'], popular: true },
-    { name: 'Enterprise', price: '₹1,999', period: 'month', features: ['Premium placement','Unlimited leads','24/7 dedicated support','Advanced analytics & insights','Full marketing suite','Verified & Premium badge','Team management (up to 5 members)'], popular: false }
+    { name: 'Basic', price: '₹499', period: 'month', features: ['Profile listing on platform', 'Up to 20 leads per month', 'Basic customer support', 'Mobile app access'], popular: false },
+    { name: 'Professional', price: '₹999', period: 'month', features: ['Featured profile listing', 'Unlimited leads', 'Priority customer support', 'Advanced analytics dashboard', 'Payment gateway integration', 'Marketing tools & promotions'], popular: true },
+    { name: 'Enterprise', price: '₹1,999', period: 'month', features: ['Premium placement', 'Unlimited leads', '24/7 dedicated support', 'Advanced analytics & insights', 'Full marketing suite', 'Verified & Premium badge', 'Team management (up to 5 members)'], popular: false }
   ];
 
-  const stats = [ { number: '5,000+', label: 'Local Providers' }, { number: '50K+', label: 'Happy Customers' }, { number: '7', label: 'Areas in Pune Covered' }, { number: '4.9★', label: 'Average Rating' } ];
+  const stats = [{ number: '5,000+', label: 'Local Providers' }, { number: '50K+', label: 'Happy Customers' }, { number: '7', label: 'Areas in Pune Covered' }, { number: '4.9★', label: 'Average Rating' }];
 
-  // --- Payment wiring (frontend) ---
-  // NOTE: These functions are placeholders. Wire to your backend endpoints.
-  const createOrderOnServer = async (plan) => {
-    // Example: POST /api/subscriptions/create-order { planId, providerId } -> returns { orderId, amount, keyId }
-    // Replace with your API URL and logic.
-    const provider = getCurrentUser();
-    if (!provider) throw new Error('Not authenticated');
+  // Payment initialization removed from here - delegated to Dashboard
 
-    // sample payload
-    const payload = { providerId: provider.id, planName: plan.name, amount: parseInt(plan.price.replace(/[^\d]/g, '')) * 100 };
-    // call backend:
-    // const res = await fetch('/api/subscriptions/create-order', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    // const data = await res.json();
-    // return data;
 
-    // For now simulate response:
-    return {
-      orderId: 'order_test_123',
-      amount: payload.amount,
-      currency: 'INR',
-      keyId: 'rzp_test_yourKeyIdHere'
-    };
-  };
-
-  const openRazorpayCheckout = (order, plan) => {
-    // If you loaded Razorpay script and have key, use as below.
-    // This is a sample integration. Replace with actual key/order returned by server.
-    const provider = getCurrentUser();
-    const options = {
-      key: order.keyId,
-      amount: order.amount,
-      currency: order.currency,
-      order_id: order.orderId,
-      name: 'GharSeva',
-      description: `${plan.name} Subscription`,
-      prefill: { name: provider?.name || '', email: provider?.email || '' },
-      handler: function (response) {
-        // On success - call server to verify signature:
-        // POST /api/subscriptions/verify { order_id, payment_id, signature }
-        console.log('Razorpay success callback:', response);
-        // Redirect to dashboard or show success modal
-        alert('Payment success! (This is a simulated flow.)');
-        // you should call backend verify and then update local state
-        localStorage.setItem('hasActiveSubscription', 'true');
-        localStorage.removeItem('selectedPlan');
-        window.location.href = '/provider';
-      },
-      modal: { ondismiss: function() { console.log('checkout closed'); } }
-    };
-
-    // If Razorpay JS is present
-    if (window.Razorpay) {
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } else {
-      // If Razorpay not loaded, show info (in dev)
-      console.warn('Razorpay script not loaded. Open server / frontend flow to test with real SDK.');
-      alert('Razorpay not initialized (development). Add SDK to test payments.');
-    }
-  };
-
-  const initiatePaymentFlow = async (plan) => {
-    try {
-      const order = await createOrderOnServer(plan);
-      openRazorpayCheckout(order, plan);
-    } catch (err) {
-      console.error('Payment initiation error', err);
-      alert('Could not initiate payment. Check console.');
-    }
-  };
-
+  // --- Button handler for plan purchase ---
   // --- Button handler for plan purchase ---
   const handleStartWithPlan = (plan) => {
     // Save selected plan (so flow continues after login/profile)
@@ -287,33 +119,17 @@ export default function App() {
       return;
     }
 
-    // If logged in but profile incomplete -> send to provider dashboard to complete profile first
-    if (!isProfileCompleted()) {
-      // redirect to provider dashboard (where profile stepper forces completion)
-      window.location.href = '/provider';
-      return;
-    }
-
-    // Logged in and profile complete -> start payment
-    initiatePaymentFlow(plan);
+    // If logged in, redirect to dashboard. 
+    // The dashboard will handle profile completion check and payment prompting.
+    window.location.href = '/dashboard';
   };
 
   // If user just signed up/logged in from modal, handle success
-  const handleAuthSuccess = (user) => {
-    // if profile not complete, redirect to provider dashboard to complete profile
-    if (!isProfileCompleted()) {
-      window.location.href = '/provider';
-      return;
-    }
-
-    // if profile is complete and selectedPlan exists, start payment
-    const plan = getSelectedPlan();
-    if (plan) {
-      initiatePaymentFlow(plan);
-    } else {
-      // else go to provider dashboard
-      window.location.href = '/provider';
-    }
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem('providerUser', JSON.stringify(userData));
+    // Always redirect to dashboard, it handles the rest
+    window.location.href = '/dashboard';
   };
 
   return (
@@ -335,18 +151,18 @@ export default function App() {
               <span className="text-3xl font-extrabold text-teal-700">
                 Ghar<span className='text-orange-500'>Seva</span>
               </span>
-               <img className="h-10 w-auto" src={logo} alt="GharSeva Logo" />
+              <img className="h-10 w-auto" src={logo} alt="GharSeva Logo" />
             </div>
-            
+
             <div className="hidden md:flex items-center space-x-8">
               <a href="#services" className="text-gray-700 hover:text-teal-600 font-medium transition">Services</a>
               <a href="#locations" className="text-gray-700 hover:text-teal-600 font-medium transition">Locations</a>
               <a href="#reviews" className="text-gray-700 hover:text-teal-600 font-medium transition">Reviews</a>
               <a href="#providers" className="text-gray-700 hover:text-teal-600 font-medium transition">For Providers</a>
-              <button onClick={() => { if (isLoggedIn()) window.location.href = '/provider'; else openLoginModal(); }} className="px-5 py-2 text-teal-600 border-2 border-teal-600 rounded-full font-semibold hover:bg-teal-50 transition duration-300">
+              <button onClick={() => { if (isLoggedIn()) window.location.href = '/dashboard'; else openLoginModal(); }} className="px-5 py-2 text-teal-600 border-2 border-teal-600 rounded-full font-semibold hover:bg-teal-50 transition duration-300">
                 {isLoggedIn() ? 'Dashboard' : 'Login'}
               </button>
-              <button onClick={() => { if (isLoggedIn() && !isProfileCompleted()) window.location.href = '/provider'; else openSignupModal(); }} className="px-5 py-2 bg-orange-600 text-white rounded-full font-semibold hover:bg-orange-700 transition duration-300 shadow-md">
+              <button onClick={() => { if (isLoggedIn() && !isProfileCompleted()) window.location.href = '/dashboard'; else openSignupModal(); }} className="px-5 py-2 bg-orange-600 text-white rounded-full font-semibold hover:bg-orange-700 transition duration-300 shadow-md">
                 Sign Up
               </button>
             </div>
@@ -374,7 +190,7 @@ export default function App() {
       {/* Hero Section - More Attractive UI */}
       <section className="bg-teal-50 pt-16 pb-20 overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between">
-          
+
           {/* Text Content */}
           <div className="md:w-1/2 text-center md:text-left z-10">
             <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
@@ -388,16 +204,16 @@ export default function App() {
               <button className="px-8 py-4 bg-orange-600 text-white text-lg rounded-full font-bold hover:bg-orange-700 transition duration-300 shadow-xl transform hover:scale-105">
                 Book Service Now!
               </button>
-              <button onClick={() => { if (isLoggedIn()) window.location.href = '/provider'; else openSignupModal(); }} className="px-8 py-4 bg-white text-teal-600 text-lg border-2 border-teal-600 rounded-full font-bold hover:bg-teal-50 transition duration-300">
-                Join Our Team <ChevronRight className='inline ml-1' size={20}/>
+              <button onClick={() => { if (isLoggedIn()) window.location.href = '/dashboard'; else openSignupModal(); }} className="px-8 py-4 bg-white text-teal-600 text-lg border-2 border-teal-600 rounded-full font-bold hover:bg-teal-50 transition duration-300">
+                Join Our Team <ChevronRight className='inline ml-1' size={20} />
               </button>
             </div>
           </div>
 
           {/* Image/Visual Element Placeholder */}
           <div className="md:w-1/2 mt-12 md:mt-0 relative flex justify-center items-center">
-             <div className="w-full max-w-sm h-64 bg-teal-200 rounded-2xl shadow-2xl flex items-center justify-center text-teal-700 font-semibold text-2xl border-4 border-white">
-                [Illustrative graphic of home services]
+            <div className="w-full max-w-sm h-64 bg-teal-200 rounded-2xl shadow-2xl flex items-center justify-center text-teal-700 font-semibold text-2xl border-4 border-white">
+              [Illustrative graphic of home services]
             </div>
           </div>
         </div>
@@ -482,7 +298,7 @@ export default function App() {
             <h2 className="text-base font-semibold text-orange-600 tracking-wide uppercase">Local Focus</h2>
             <p className="mt-2 text-4xl font-extrabold text-gray-900">Serving Key Areas in Pune</p>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {locations.map((location, idx) => (
               <div key={idx} className="bg-gray-50 p-4 rounded-lg text-center hover:bg-teal-50 transition duration-300 shadow-md border border-gray-100">
@@ -563,11 +379,10 @@ export default function App() {
                 </ul>
                 <button
                   onClick={() => handleStartWithPlan(plan)}
-                  className={`w-full py-3 rounded-full font-bold text-lg transition duration-300 ${
-                    plan.popular
-                      ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-xl'
-                      : 'bg-teal-600 text-white hover:bg-teal-700'
-                  }`}
+                  className={`w-full py-3 rounded-full font-bold text-lg transition duration-300 ${plan.popular
+                    ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-xl'
+                    : 'bg-teal-600 text-white hover:bg-teal-700'
+                    }`}
                 >
                   Start with {plan.name}
                 </button>
