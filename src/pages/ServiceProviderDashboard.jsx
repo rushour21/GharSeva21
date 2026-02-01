@@ -202,6 +202,28 @@ export default function ServiceProviderDashboard() {
       return <div className="p-10 text-center">Loading Dashboard...</div>;
     }
 
+    // --- RESTRICT ACCESS IF PROFILE NOT CREATED ---
+    if (!providerProfile && ["dashboard", "jobs", "earnings"].includes(activeView)) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-8 animate-fade-in-up">
+          <div className="w-24 h-24 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
+            <ShieldCheck size={48} />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-3">Complete Your Profile</h2>
+          <p className="text-gray-500 max-w-md mb-8 text-lg">
+            Access to the Dashboard, Leads, and Earnings is restricted. Please complete your profile verification to unlock these features.
+          </p>
+          <button
+            onClick={() => setIsProfileModalOpen(true)}
+            className="px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-lg font-bold rounded-full shadow-xl hover:shadow-orange-200 hover:scale-105 transition-all flex items-center"
+          >
+            <User size={20} className="mr-2" />
+            Complete Profile Now
+          </button>
+        </div>
+      );
+    }
+
     switch (activeView) {
       case "profile":
         return (
@@ -346,8 +368,8 @@ export default function ServiceProviderDashboard() {
                       <div
                         key={plan._id}
                         className={`relative bg-white p-8 rounded-2xl transition-all duration-300 ${plan.sortOrder === 1
-                            ? "ring-2 ring-orange-500 shadow-xl scale-105 z-10"
-                            : "border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1"
+                          ? "ring-2 ring-orange-500 shadow-xl scale-105 z-10"
+                          : "border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1"
                           }`}
                       >
                         {plan.sortOrder === 1 && (
@@ -378,8 +400,8 @@ export default function ServiceProviderDashboard() {
                         <button
                           onClick={() => handleBuyPlan(plan)}
                           className={`w-full py-3.5 rounded-xl font-bold transition-all shadow-lg ${plan.sortOrder === 1
-                              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-orange-200 hover:to-orange-700"
-                              : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-gray-200"
+                            ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-orange-200 hover:to-orange-700"
+                            : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-gray-200"
                             }`}
                         >
                           Choose {plan.name}
