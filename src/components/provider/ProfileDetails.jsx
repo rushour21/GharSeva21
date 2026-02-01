@@ -7,18 +7,18 @@ const ProfileDetails = ({ provider, onEdit }) => {
     return (
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
             {/* Header / Cover */}
-            <div className="bg-slate-800 h-32 relative">
+            <div className="bg-gradient-to-r from-gray-800 to-gray-900 h-40 relative">
                 <div className="absolute -bottom-16 left-8">
                     <img
                         src={provider.profilePhotoUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + provider.name}
                         alt={provider.name}
-                        className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-white"
+                        className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover bg-white ring-2 ring-gray-100"
                     />
                 </div>
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-6 right-6">
                     <button
                         onClick={onEdit}
-                        className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full backdrop-blur-sm transition transition-all"
+                        className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-full backdrop-blur-md transition-all shadow-sm font-medium border border-white/20 hover:scale-105 active:scale-95"
                     >
                         <Edit size={16} /> Edit Profile
                     </button>

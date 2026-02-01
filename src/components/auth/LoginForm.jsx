@@ -38,36 +38,46 @@ const LoginForm = ({ onClose, openSignup, onLoginSuccess }) => {
     };
 
     return (
-        <form className="space-y-4" onSubmit={handleSubmit}>
-            <input
-                type="email"
-                placeholder="Email Address"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-            />
+        <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input
+                        type="email"
+                        placeholder="Your email address"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all bg-gray-50 hover:bg-white"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={loading}
+                    />
+                </div>
 
-            <input
-                type="password"
-                placeholder="Password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-            />
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input
+                        type="password"
+                        placeholder="Your password"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all bg-gray-50 hover:bg-white"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={loading}
+                    />
+                </div>
+            </div>
 
-            <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-teal-600 text-white font-semibold rounded-lg
-                   hover:bg-teal-700 transition duration-300 shadow-md hover:shadow-lg
-                   disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-                {loading ? 'Logging in...' : 'Log In'}
-            </button>
+            <div className="pt-2">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-teal-700 text-white font-bold rounded-xl
+                       hover:from-teal-700 hover:to-teal-800 transition-all duration-300 shadow-lg hover:shadow-teal-200
+                       disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-[0.98]"
+                >
+                    {loading ? 'Logging in...' : 'Log In'}
+                </button>
+            </div>
 
             <p className="text-sm text-center text-gray-600">
                 Don't have an account?{' '}
@@ -78,7 +88,7 @@ const LoginForm = ({ onClose, openSignup, onLoginSuccess }) => {
                         onClose();
                         openSignup();
                     }}
-                    className="text-orange-600 hover:underline font-semibold"
+                    className="text-orange-600 hover:text-orange-700 hover:underline font-bold transition-colors"
                 >
                     Sign Up
                 </button>

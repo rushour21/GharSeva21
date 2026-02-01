@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Users, Shield, Clock, CheckCircle, Menu, X, ChevronRight, Phone, Mail, Zap, Home, DollarSign, Briefcase } from 'lucide-react';
 import logo from './assets/logo.png';
+import heroImg from './assets/hero_illustration.png';
 import axios from 'axios';
 import Modal from './components/common/Modal';
 import LoginForm from './components/auth/LoginForm';
@@ -194,7 +195,6 @@ export default function App() {
           {/* Text Content */}
           <div className="md:w-1/2 text-center md:text-left z-10">
             <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
-              Pune's No.1
               <span className="text-teal-700 block"> Home Service Platform</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-lg md:max-w-none">
@@ -210,11 +210,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* Image/Visual Element Placeholder */}
+          {/* Image/Visual Element */}
           <div className="md:w-1/2 mt-12 md:mt-0 relative flex justify-center items-center">
-            <div className="w-full max-w-sm h-64 bg-teal-200 rounded-2xl shadow-2xl flex items-center justify-center text-teal-700 font-semibold text-2xl border-4 border-white">
-              [Illustrative graphic of home services]
-            </div>
+            <img
+              src={heroImg}
+              alt="GharSeva Professional Services"
+              className="w-full max-w-lg object-contain drop-shadow-2xl animate-fade-in-up hover:scale-105 transition-transform duration-500 ease-in-out"
+            />
           </div>
         </div>
 

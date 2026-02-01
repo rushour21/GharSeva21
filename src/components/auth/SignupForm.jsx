@@ -44,46 +44,60 @@ const SignupForm = ({ onClose, openLogin, onSignupSuccess, presetPlan }) => {
     };
 
     return (
-        <form className="space-y-4" onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Full Name"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={loading}
-            />
+        <form className="space-y-5" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                        type="text"
+                        placeholder="e.g. Rahul Sharma"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all bg-gray-50 hover:bg-white"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        disabled={loading}
+                    />
+                </div>
 
-            <input
-                type="email"
-                placeholder="Email Address"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-            />
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input
+                        type="email"
+                        placeholder="rahul@example.com"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all bg-gray-50 hover:bg-white"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={loading}
+                    />
+                </div>
 
-            <input
-                type="password"
-                placeholder="Create Password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-            />
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input
+                        type="password"
+                        placeholder="Create a strong password"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all bg-gray-50 hover:bg-white"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={loading}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Must be at least 8 characters long</p>
+                </div>
+            </div>
 
-            <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg
-                   hover:bg-orange-700 transition duration-300 shadow-md hover:shadow-lg
-                   disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-                {loading ? 'Signing up...' : 'Sign Up'}
-            </button>
+            <div className="pt-2">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 text-white font-bold rounded-xl
+                       hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-lg hover:shadow-orange-200
+                       disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-[0.98]"
+                >
+                    {loading ? 'Creating Account...' : 'Sign Up & Get Started'}
+                </button>
+            </div>
 
             <p className="text-sm text-center text-gray-600">
                 Already have an account?{' '}
@@ -94,7 +108,7 @@ const SignupForm = ({ onClose, openLogin, onSignupSuccess, presetPlan }) => {
                         onClose();
                         openLogin();
                     }}
-                    className="text-teal-600 hover:underline font-semibold"
+                    className="text-teal-600 hover:text-teal-700 hover:underline font-bold transition-colors"
                 >
                     Log In
                 </button>
